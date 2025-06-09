@@ -1,4 +1,4 @@
-# [Ramnit Lab](https://cyberdefenders.org/blueteam-ctf-challenges/ramnit/)
+# [Ramnit](https://cyberdefenders.org/blueteam-ctf-challenges/ramnit/)
 
 ## Scenario
 
