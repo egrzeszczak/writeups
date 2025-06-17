@@ -1,8 +1,5 @@
 # [Yellow RAT](https://cyberdefenders.org/blueteam-ctf-challenges/yellow-rat/)
 
-> [!note]
-> This is a work in progress writeup
-
 ## Scenario
 
 During a regular IT security check at GlobalTech Industries, abnormal network traffic was detected from multiple workstations. Upon initial investigation, it was discovered that certain employees' search queries were being redirected to unfamiliar websites. This discovery raised concerns and prompted a more thorough investigation. Your task is to investigate this incident and gather as much information as possible.
@@ -37,7 +34,7 @@ These links are sufficient to do a deep dive on the file, since Malware bazaar a
 
 ### Malware bazaar
 
-The file has the name "111bc461-1ca8-43c6-97ed-911e0e69fdf8.dll" and is a dynamic-link library. I've downloaded the sample as well, since a quick glance on other search results do not provide a lot of information.
+The file has the name `111bc461-1ca8-43c6-97ed-911e0e69fdf8.dll` and is a dynamic-link library. I've downloaded the sample as well, since a quick glance on other search results do not provide a lot of information.
 
 I've tried uploading the file to Filescan.io, another tool for static analysis but that resulted in an error.
 
@@ -60,29 +57,58 @@ The report provides some insight on how this file behaves. I've selected a few t
 
 ### AlienVault OTX
 
-I really like AlienVault pulses, in this report we have a description, the malware's family name and references to some reports from Red Canary and Morphisec.
+According to AlienVault we are dealing with "Yellow Cockatoo RAT" (also named as "Jupyter Infostealer") - a .NET remote access trojan (RAT) that runs in memory and drops other payloads.
 
-So we according to AlienVault we are dealing with "Yellow Cockatoo RAT" (also named as "Jupyter Infostealer ") - a .NET remote access trojan (RAT) that runs in memory and drops other payloads.
+I really like AlienVault pulses, in this report we have summarized information, like a description, the malware's family name and the references to some reports from [Red Canary]( https://redcanary.com/blog/yellow-cockatoo/) and [Morphisec](https://www.morphisec.com/hubfs/eBooks_and_Whitepapers/Jupyter%20Infostealer%20WEB.pdf).
 
-<!-- TBD -->
+References to reports from cybersecurity blogs are really helpful since they ofter contain a technical breakdown that helps us understand the full attack path.
 
-> [!note]
-> This is a work in progress writeup
+In Red Canary report there is a deep dive on the .NET RAT, that also contains the answer to the question no. 5. 
+
+I highly suggest you give these two reports a read. 
+
+### Further analysis
+
+In the questions we are asked to check out the binary compilation timestamp. For that we can just look it up in **VirusTotal** > **Details** > **Portable Executable Info**
+
+```
+Target Machine:         Intel 386 or later processors and compatible processors
+Compilation Timestamp:  2020-09-24 18:26:47 UTC
+Entry Point:            63422
+Contained Sections:     3 
+```
+
+First submission however, I visible in the **Details** > **History**
+
+```
+Creation Time:             2020-09-24 18:26:47 UTC
+First Seen In The Wild:    2021-01-18 20:15:04 UTC
+First Submission:          2020-10-15 02:47:37 UTC
+Last Submission:           2025-06-01 23:16:55 UTC
+Last Analysis:             2025-06-17 11:06:17 UTC 
+```
 
 ## Answers
 
 1. Understanding the adversary helps defend against attacks. What is the name of the malware family that causes abnormal network traffic?
     > Yellow Cockatoo RAT
 1. As part of our incident response, knowing common filenames the malware uses can help scan other workstations for potential infection. What is the common filename associated with the malware discovered on our workstations?
-    > answer
+    > 111bc461-1ca8-43c6-97ed-911e0e69fdf8.dll
 1. Determining the compilation timestamp of malware can reveal insights into its development and deployment timeline. What is the compilation timestamp of the malware that infected our network?
-    > answer
+    > 2020-09-24 18:26
 1. Understanding when the broader cybersecurity community first identified the malware could help determine how long the malware might have been in the environment before detection. When was the malware first submitted to VirusTotal?
-    > answer
+    > 2020-10-15 02:47
 1. To completely eradicate the threat from Industries' systems, we need to identify all components dropped by the malware. What is the name of the .dat file that the malware dropped in the AppData folder?
-    > answer
+    > solarmarker.dat
 1. It is crucial to identify the C2 servers with which the malware communicates to block its communication and prevent further data exfiltration. What is the C2 server that the malware is communicating with?
     > answer
 
 ## Resources used
+
+* https://bazaar.abuse.ch/sample/30e527e45f50d2ba82865c5679a6fa998ee0a1755361ab01673950810d071c85/
+* https://www.hybrid-analysis.com/sample/30e527e45f50d2ba82865c5679a6fa998ee0a1755361ab01673950810d071c85/5f87b2920788cb226f59d611
+* https://otx.alienvault.com/pulse/5fcab7a1accb28c015a5717d
+* https://redcanary.com/blog/yellow-cockatoo/
+* https://www.morphisec.com/hubfs/eBooks_and_Whitepapers/Jupyter%20Infostealer%20WEB.pdf
+* https://www.virustotal.com/gui/file/30e527e45f50d2ba82865c5679a6fa998ee0a1755361ab01673950810d071c85/details
 
